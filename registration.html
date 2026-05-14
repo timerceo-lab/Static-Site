@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+<title>Turnier Registrierung - MSI Tournament</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: white;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #00ff88, transparent),
+                radial-gradient(1px 1px at 90px 40px, #00ccff, transparent),
+                radial-gradient(1px 1px at 200px 150px, #00ff88, transparent),
+                radial-gradient(2px 2px at 350px 80px, #00ccff, transparent);
+            background-repeat: repeat;
+            background-size: 400px 400px;
+            animation: float 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            25% { transform: translateY(-20px) translateX(10px); }
+            50% { transform: translateY(-10px) translateX(-10px); }
+            75% { transform: translateY(-30px) translateX(5px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+		
+		
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.5), 0 0 30px rgba(0, 204, 255, 0.3); }
+            50% { text-shadow: 0 0 30px rgba(0, 255, 136, 0.8), 0 0 40px rgba(0, 204, 255, 0.6); }
+        }
+
+        @keyframes sweep {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .header {
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #333;
+            padding: 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, #00ccff, transparent);
+            animation: sweep 3s ease-in-out infinite;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, #ffffff, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 50%;
+            right: 2rem;
+            transform: translateY(-50%);
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            border: 1px solid #333;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        .user-info.visible {
+            display: flex;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #0a0a0a;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .username {
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .wallet-short {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'Courier New', monospace;
+        }
+
+        .disconnect-btn {
+            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .disconnect-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .connect-section {
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .connect-section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #00ff88);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .connect-section:hover::before {
+            opacity: 0.3;
+        }
+
+        .metamask-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .connect-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .connect-description {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #0a0a0a;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .connect-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.5);
+        }
+
+        .connect-btn:hover::before {
+            left: 100%;
+        }
+
+        .filters-section {
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .filters-section.visible {
+            display: block;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .filters-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #00ff88;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .filter-select {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 0.8rem;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .tournaments-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, #ffffff, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 3s ease-in-out infinite alternate;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .tournaments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .tournament-card {
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .tournament-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .tournament-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            border-color: #00ff88;
+        }
+
+        .tournament-card:hover::before {
+            left: 100%;
+        }
+
+        .tournament-card.registered {
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .tournament-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+        }
+
+        .tournament-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: white;
+            line-height: 1.3;
+        }
+
+        .game-badge {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            border: 1px solid #333;
+            color: #00ccff;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .game-icon {
+            font-size: 1.2rem;
+        }
+
+        .tournament-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-registration { background: #3b82f6; }
+        .status-started { background: #00ff88; }
+        .status-finished { background: #f59e0b; }
+
+        .tournament-info {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #00ccff;
+            font-weight: bold;
+        }
+
+        .tournament-description {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 1rem;
+            border-radius: 15px;
+            border: 1px solid #333;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .participants-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .participants-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .participants-title {
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .participants-count {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            border: 1px solid #333;
+            color: #00ccff;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .participants-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .participant-tag {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            border: 1px solid #333;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .participant-tag.current-user {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.3), rgba(0, 204, 255, 0.2));
+            border-color: #00ff88;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .tournament-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .register-btn {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #0a0a0a;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.3s ease;
+        }
+
+        .register-btn:hover:not(:disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+        }
+
+        .register-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .register-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .register-btn.registered {
+            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            color: white;
+        }
+
+        .register-btn.registered:hover:not(:disabled) {
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #00ff88;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .message {
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: sweep 2s infinite;
+        }
+
+        .message.visible {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .message.error {
+            background: linear-gradient(145deg, rgba(255, 71, 87, 0.2), rgba(255, 107, 122, 0.1));
+            color: #ff6b7a;
+            border: 2px solid #ff4757;
+            box-shadow: 0 0 20px rgba(255, 71, 87, 0.2);
+        }
+
+        .message.success {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.2), rgba(0, 204, 255, 0.1));
+            color: #00ff88;
+            border: 2px solid #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .user-info {
+                position: static;
+                transform: none;
+                margin-top: 1rem;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .header {
+                padding-bottom: 1rem;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .tournaments-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tournament-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .tournament-actions {
+                flex-direction: column;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+		
+		.auto-tournament {
+    position: relative;
+    overflow: hidden;
+}
+
+.auto-tournament::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #ffd700, #ffed4e, #ffd700);
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+.game-section {
+    background: linear-gradient(145deg, rgba(26, 26, 46, 0.5), rgba(15, 15, 26, 0.5));
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid #333;
+}
+
+/* Navigation Styles */
+        .msi-navigation {
+    background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid #333;
+    padding: 3rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;   /* Menü in die Mitte */
+    align-items: center;
+    animation: navFadeIn 0.6s ease-out;
+}
+
+        @keyframes navFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msi-navigation::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff88, #00ccff, transparent);
+            animation: navSweep 3s ease-in-out infinite;
+        }
+
+        @keyframes navSweep {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(0); }
+            100% { transform: translateX(100%); }
+        }
+
+        .msi-logo-container {
+    position: absolute;
+    left: 1.5rem; /* Logo links */
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+        .msi-logo {
+    width: 120px;   /* Logo größer */
+    height: auto;  /* behält Seitenverhältnis */
+    border-radius: 0; /* keine runden Ecken */
+    background: none; /* Hintergrund entfernen */
+    box-shadow: none; /* Schatten entfernen */
+    animation: none;  /* keine Puls-Animation */
+}
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 136, 0.3); }
+            50% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.6); }
+        }
+
+        .msi-logo:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.5);
+        }
+
+        .brand-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ffffff, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            animation: brandGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes brandGlow {
+            0%, 100% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.3); }
+            50% { text-shadow: 0 0 30px rgba(0, 255, 136, 0.6); }
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: #cccccc;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 0.7rem 1.2rem;
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .nav-link:hover {
+            color: #00ff88;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.2), rgba(0, 204, 255, 0.1));
+            color: #00ff88;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #0a0a0a;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .mobile-menu-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .msi-navigation {
+                padding: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .nav-menu {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid #333;
+            }
+
+            .nav-menu.mobile-open {
+                display: flex;
+                animation: mobileMenuSlide 0.3s ease-out;
+            }
+
+            @keyframes mobileMenuSlide {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .nav-link {
+                width: 100%;
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .brand-text {
+                font-size: 1.1rem;
+            }
+
+            .msi-logo {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .msi-navigation {
+                padding: 0.8rem;
+            }
+
+            .brand-text {
+                font-size: 1rem;
+            }
+
+            .nav-link {
+                font-size: 0.9rem;
+                padding: 0.8rem;
+            }
+        }
+
+.auto-tournaments-section {
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.05), rgba(255, 237, 78, 0.02));
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 15px;
+    padding: 1.5rem;
+}
+
+.manual-tournaments-section {
+    background: linear-gradient(145deg, rgba(0, 204, 255, 0.05), rgba(0, 255, 136, 0.02));
+    border: 1px solid rgba(0, 204, 255, 0.2);
+    border-radius: 15px;
+    padding: 1.5rem;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 768px) {
+    .game-section {
+        padding: 1rem;
+    }
+    
+    .auto-tournaments-section,
+    .manual-tournaments-section {
+        padding: 1rem;
+    }
+    
+    .auto-tournaments-section > div,
+    .manual-tournaments-section > div {
+        grid-template-columns: 1fr !important;
+    }
+}
+    </style>
+</head>
+<body>
+    <nav class="msi-navigation">
+    <div class="msi-logo-container">
+        <img src="MSI.png" alt="MSI Logo" class="msi-logo">
+    </div>
+    
+    <div class="nav-menu" id="navMenu">
+        <a href="index.html" class="nav-link">
+            <span class="nav-icon">🏠</span>
+            Home
+        </a>
+        <a href="registration.html" class="nav-link">
+            <span class="nav-icon">📝</span>
+            Registrieren
+        </a>
+        <a href="my_tournaments.html" class="nav-link">
+            <span class="nav-icon">🏆</span>
+            Meine Turniere
+        </a>
+        <a href="profile.html" class="nav-link">
+            <span class="nav-icon">👤</span>
+            Profil
+        </a>
+        <a href="chat_test_page.html" class="nav-link">
+        <span>💬</span>
+        Chat
+    </a>
+    </div>
+
+    <!-- User Info Section -->
+    <div class="user-info" id="userInfo">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-details">
+            <div class="username" id="username">Unbekannt</div>
+            <div class="wallet-short" id="walletShort"></div>
+        </div>
+        <button class="disconnect-btn" onclick="disconnect()">Abmelden</button>
+    </div>
+    
+    <button class="mobile-menu-toggle" id="mobileToggle" onclick="toggleMobileMenu()">
+        ☰
+    </button>
+</nav>
+
+    <div class="main-content">
+        <!-- Connect Section (shown when not logged in) -->
+        <div class="connect-section" id="connectSection">
+            <div class="metamask-logo">🎮</div>
+            <h2 class="connect-title">Bitte einloggen</h2>
+            <p class="connect-description">
+                Du musst eingeloggt sein, um dich für Turniere anzumelden.
+            </p>
+            <a href="profile.html" class="connect-btn" style="display:inline-flex;align-items:center;gap:8px;text-decoration:none;">
+                <span>🔑</span>
+                Login / Registrieren
+            </a>
+        </div>
+
+        <!-- Message Container -->
+        <div class="message" id="messageContainer"></div>
+
+        <!-- Filters Section -->
+        <div class="filters-section" id="filtersSection">
+            <div class="filters-title">
+                <span>🔍</span>
+                Turniere filtern
+            </div>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Spiel</label>
+                    <select class="filter-select" id="gameFilter" onchange="applyFilters()">
+                        <option value="">Alle Spiele</option>
+                        <option value="fifa">FIFA</option>
+                        <option value="cod">Call of Duty</option>
+                        <option value="tiktaktoe">TikTakToe</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+                        <option value="">Alle Status</option>
+                        <option value="registration">Registrierung offen</option>
+                        <option value="started">Läuft</option>
+                        <option value="finished">Beendet</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tournaments Section -->
+        <div class="tournaments-section" id="tournamentsSection">
+            <h2 class="section-title">
+                <span>🎮</span>
+                Verfügbare Turniere
+            </h2>
+            <div class="tournaments-grid" id="tournamentsGrid">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Lade Turniere...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://msi-backend-test.onrender.com';
+        let currentUser = null;
+        let allTournaments = [];
+        let filteredTournaments = [];
+
+        // ---- Session ----
+        function getSession() { try { return JSON.parse(localStorage.getItem('msi_user')||'null'); } catch { return null; } }
+
+        // ---- Init ----
+        function initAuth() {
+            const session = getSession();
+            if (session) {
+                currentUser = session;
+                document.getElementById('connectSection').style.display = 'none';
+                document.getElementById('userInfo').classList.add('visible');
+                document.getElementById('userAvatar').textContent = session.platformUsername.charAt(0).toUpperCase();
+                document.getElementById('username').textContent = session.platformUsername;
+                document.getElementById('walletShort').textContent = session.email;
+                document.getElementById('filtersSection').style.display = '';
+                loadTournaments();
+            } else {
+                document.getElementById('connectSection').style.display = '';
+                document.getElementById('userInfo').classList.remove('visible');
+                document.getElementById('filtersSection').style.display = 'none';
+                document.getElementById('tournamentsSection').style.display = 'none';
+            }
+        }
+
+        function disconnect() {
+            localStorage.removeItem('msi_user');
+            currentUser = null;
+            window.location.reload();
+        }
+
+        // ---- CS:GO2 Contest join ----
+        function joinCsgo2Contest(format) {
+            if (!currentUser) {
+                showMessage('Bitte zuerst einloggen!', 'error');
+                return;
+            }
+            localStorage.setItem('selectedGame', 'CS:GO2');
+            localStorage.setItem('csgo2ContestFormat', format);
+            showMessage(`Anmeldung für CS:GO2 ${format} Contest läuft...`, 'success');
+            fetch(`${API}/games/csgo2/contests/${format}/join`, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ email: currentUser.email })
+            }).then(r=>r.json()).then(data=>{
+                if (data.error) { showMessage(data.error, 'error'); return; }
+                showMessage(`✅ Erfolgreich für ${format} Contest angemeldet! Noch ${data.spotsLeft} Plätze frei.`, 'success');
+            }).catch(()=>showMessage('Fehler beim Anmelden.','error'));
+        }
+
+        // ---- Message ----
+        function showMessage(text, type='info') {
+            const el = document.getElementById('messageContainer');
+            el.textContent = text;
+            el.className = 'message ' + type;
+            el.style.display = 'block';
+            setTimeout(()=>{ el.style.display = 'none'; }, 4000);
+        }
+
+        // ---- Format date ----
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+        }
+
+        // ---- Load tournaments ----
+        async function loadTournaments() {
+            try {
+                const res = await fetch(`${API}/games`);
+                const games = await res.json();
+                allTournaments = [];
+                for (const [gameId, game] of Object.entries(games)) {
+                    for (const tournament of Object.values(game.tournaments || {})) {
+                        allTournaments.push({ ...tournament, gameId, gameName: game.name });
+                    }
+                }
+                allTournaments.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                filteredTournaments = [...allTournaments];
+                applyFilters();
+                document.getElementById('tournamentsSection').style.display = '';
+            } catch (e) {
+                showMessage('Fehler beim Laden der Turniere.', 'error');
+            }
+        }
+
+        // ---- Filters ----
+        function applyFilters() {
+            const gameFilter = document.getElementById('gameFilter')?.value || '';
+            const statusFilter = document.getElementById('statusFilter')?.value || '';
+            filteredTournaments = allTournaments.filter(t => {
+                if (gameFilter && t.gameId !== gameFilter) return false;
+                if (statusFilter && t.status !== statusFilter) return false;
+                return true;
+            });
+            renderTournaments();
+        }
+
+        // ---- Render ----
+        function renderTournaments() {
+            const grid = document.getElementById('tournamentsGrid');
+            if (!filteredTournaments.length) {
+                grid.innerHTML = '<div class="no-tournaments"><h3>Keine Turniere gefunden</h3><p>Versuche andere Filter</p></div>';
+                return;
+            }
+            grid.innerHTML = filteredTournaments.map(t => {
+                const isRegistered = t.participants?.some(p => p.email === currentUser?.email);
+                const isFull = t.autoStartPlayerCount && t.participants?.length >= t.autoStartPlayerCount;
+                const spots = t.autoStartPlayerCount ? (t.autoStartPlayerCount - (t.participants?.length||0)) : '∞';
+                const statusLabel = { registration:'Offen', started:'Läuft', finished:'Beendet' }[t.status] || t.status;
+                const statusColor = { registration:'#00ff88', started:'#ffd700', finished:'#ff4757' }[t.status] || '#888';
+                return `
+                <div class="tournament-card" style="animation:fadeIn 0.4s ease-out;">
+                    <div class="tournament-header">
+                        <div>
+                            <div class="tournament-name">${t.name}</div>
+                            <div class="tournament-game">${t.gameName}${t.contestFormat?' · '+t.contestFormat:''}</div>
+                        </div>
+                        <span class="tournament-status" style="background:${statusColor};color:#000;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:bold;">${statusLabel}</span>
+                    </div>
+                    ${t.description ? `<p style="color:#aaa;font-size:0.9rem;margin:8px 0;">${t.description}</p>` : ''}
+                    <div class="tournament-info">
+                        <span>👥 ${t.participants?.length||0}/${t.autoStartPlayerCount||'∞'} Spieler</span>
+                        <span>📅 ${formatDate(t.createdAt)}</span>
+                        ${t.prizePool ? `<span>💰 $${t.prizePool}</span>` : ''}
+                        ${t.status==='registration' ? `<span>🎯 ${spots} Plätze frei</span>` : ''}
+                    </div>
+                    <div class="tournament-actions">
+                        ${t.status === 'registration' ? (
+                            isRegistered
+                            ? `<button class="leave-btn" onclick="unregister('${t.gameId}','${t.id}')">❌ Abmelden</button>`
+                            : isFull
+                            ? `<button class="join-btn" disabled style="opacity:0.5;cursor:not-allowed;">🔒 Voll</button>`
+                            : `<button class="join-btn" onclick="register('${t.gameId}','${t.id}')">✅ Anmelden</button>`
+                        ) : t.status === 'started'
+                            ? `<a href="tournament.html" class="join-btn" style="display:inline-block;text-align:center;text-decoration:none;" onclick="localStorage.setItem('selectedGame','${t.gameName}')">👁️ Bracket</a>`
+                            : `<span style="color:#888;font-size:0.9rem;">Turnier beendet</span>`
+                        }
+                        ${isRegistered ? '<span style="color:#00ff88;font-size:0.85rem;">✅ Angemeldet</span>' : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ---- Register ----
+        async function register(gameId, tournamentId) {
+            if (!currentUser) return showMessage('Bitte einloggen.', 'error');
+            try {
+                const res = await fetch(`${API}/games/${gameId}/tournaments/${tournamentId}/register`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ email: currentUser.email })
+                });
+                const data = await res.json();
+                if (!res.ok) return showMessage(data.error || 'Fehler.', 'error');
+                showMessage('✅ Erfolgreich angemeldet!', 'success');
+                loadTournaments();
+            } catch { showMessage('Server nicht erreichbar.', 'error'); }
+        }
+
+        // ---- Unregister ----
+        async function unregister(gameId, tournamentId) {
+            if (!currentUser) return;
+            try {
+                const res = await fetch(`${API}/games/${gameId}/tournaments/${tournamentId}/unregister`, {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ email: currentUser.email })
+                });
+                const data = await res.json();
+                if (!res.ok) return showMessage(data.error || 'Fehler.', 'error');
+                showMessage('✅ Erfolgreich abgemeldet.', 'success');
+                loadTournaments();
+            } catch { showMessage('Server nicht erreichbar.', 'error'); }
+        }
+
+        function toggleMobileMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const toggle = document.getElementById('mobileToggle');
+            navMenu.classList.toggle('mobile-open');
+            toggle.textContent = navMenu.classList.contains('mobile-open') ? '✕' : '☰';
+        }
+
+        document.addEventListener('DOMContentLoaded', initAuth);
+    </script>
+</body>
+</html>

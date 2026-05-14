@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+<title>Profil bearbeiten - MSI Tournament</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #00ff88, transparent),
+                radial-gradient(1px 1px at 90px 40px, #00ccff, transparent),
+                radial-gradient(1px 1px at 200px 150px, #00ff88, transparent),
+                radial-gradient(2px 2px at 350px 80px, #00ccff, transparent);
+            background-repeat: repeat;
+            background-size: 400px 400px;
+            animation: float 15s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            25% { transform: translateY(-20px) translateX(10px); }
+            50% { transform: translateY(-10px) translateX(-10px); }
+            75% { transform: translateY(-30px) translateX(5px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+		
+		@keyframes navSweep {
+    0% { transform: translateX(-100%); }
+    50% { transform: translateX(0); }
+    100% { transform: translateX(100%); }
+}
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 136, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 136, 0); }
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(0, 255, 136, 0.5), 0 0 30px rgba(0, 204, 255, 0.3); }
+            50% { text-shadow: 0 0 30px rgba(0, 255, 136, 0.8), 0 0 40px rgba(0, 204, 255, 0.6); }
+        }
+
+        @keyframes sweep {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+      
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: #cccccc;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+  
+
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 20px;
+            color: #ffffff;
+        }
+
+        .user-info.visible {
+            display: flex;
+            animation: fadeIn 0.6s ease-out 0.3s both;
+        }
+
+        .wallet-address {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #333;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .wallet-address:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .disconnect-btn {
+            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .disconnect-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .disconnect-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 71, 87, 0.4);
+        }
+
+        .disconnect-btn:hover::before {
+            left: 100%;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .login-container {
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.1);
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #00ff88);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .login-container:hover::before {
+            opacity: 0.3;
+        }
+
+        .registration-container {
+            display: none;
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+            max-width: 600px;
+            width: 100%;
+            color: white;
+            position: relative;
+        }
+
+        .registration-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #00ff88);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .registration-container.visible {
+            display: block;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .profile-container {
+            display: none;
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+            max-width: 800px;
+            width: 100%;
+            color: white;
+            position: relative;
+        }
+
+        .profile-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ff88, #00ccff, #00ff88);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .profile-container.visible {
+            display: block;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .metamask-logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 25px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+            animation: pulse 2s infinite;
+            transition: all 0.3s ease;
+        }
+
+        .metamask-logo:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.6);
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 25px;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+            animation: pulse 2s infinite;
+            transition: all 0.3s ease;
+            color: #0a0a0a;
+            font-weight: bold;
+        }
+
+        .profile-avatar:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.6);
+        }
+
+        h1 {
+            background: linear-gradient(45deg, #ffffff, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            font-size: 2rem;
+            animation: glow 3s ease-in-out infinite alternate;
+        }
+
+        h2 {
+            background: linear-gradient(45deg, #ffffff, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            animation: glow 3s ease-in-out infinite alternate;
+            text-align: center;
+        }
+
+        .description {
+            color: #cccccc;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+        }
+		
+			.msi-navigation {
+    background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid #333;
+    padding: 3rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: navFadeIn 0.6s ease-out;
+}
+
+@keyframes navFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.msi-logo-container {
+    position: absolute;
+    left: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#userInfo,
+.connect-button {
+    position: absolute;
+    right: 1.5rem;
+}
+
+        .section-title {
+            color: #00ff88;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .form-group {
+            text-align: left;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .platform-icon {
+            font-size: 1.2rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #333;
+            border-radius: 15px;
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input::placeholder {
+            color: #888;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .character-counter {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .character-counter.warning {
+            color: #f59e0b;
+        }
+
+        .character-counter.error {
+            color: #ff4757;
+        }
+
+        .current-value {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+        }
+
+        .current-value.empty {
+            color: #888;
+            font-style: italic;
+        }
+
+      .action-button,
+.connect-button {
+    background: linear-gradient(45deg, #00ff88, #00ccff);
+    color: #0a0a0a;
+    border: none;
+    padding: 18px 36px;  
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 30px auto 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.35);
+}
+
+.action-button::before,
+.connect-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transition: left 0.5s ease;
+}
+
+.action-button:hover:not(:disabled),
+.connect-button:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 12px 45px rgba(0, 255, 136, 0.55);
+}
+
+.action-button:hover:not(:disabled)::before,
+.connect-button:hover::before {
+    left: 100%;
+}
+
+        .action-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+
+        .error-message {
+            background: linear-gradient(145deg, #2a1a1e, #1a0f0f);
+            color: #ff6b7a;
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+            border: 1px solid #ff4757;
+            box-shadow: 0 0 15px rgba(255, 71, 87, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+		
+		.msi-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .msi-logo {
+    width: 120px;   /* Logo größer */
+    height: auto;  /* behält Seitenverhältnis */
+    border-radius: 0; /* keine runden Ecken */
+    background: none; /* Hintergrund entfernen */
+    box-shadow: none; /* Schatten entfernen */
+    animation: none;  /* keine Puls-Animation */
+}
+
+        .success-message {
+            background: linear-gradient(145deg, #1a2a1e, #0f1a0f);
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+            border: 1px solid #00ff88;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .success-message.visible {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #333;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #cccccc;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+			
+			.nav-menu {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+                padding-top: 1rem;
+                border-top: 1px solid #333;
+            }
+
+            .nav-link {
+    color: #cccccc;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 0.7rem 1.2rem;
+    border-radius: 25px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-link:hover {
+    color: #00ff88;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+}
+
+.nav-link:hover::before {
+    left: 100%;
+}
+			
+	
+
+          .user-info {
+    position: absolute;
+    right: 1.5rem;
+    display: none;
+    align-items: center;
+    gap: 20px;
+    color: #ffffff;
+    background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    border: 1px solid #333;
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+}
+
+
+            .wallet-address {
+                font-size: 0.8rem;
+                word-break: break-all;
+                padding: 8px 15px;
+            }
+
+            .login-container, .registration-container, .profile-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.7rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .metamask-logo, .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+
+            .profile-avatar {
+                font-size: 2.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="msi-navigation">
+    <div class="msi-logo-container">
+        <img src="MSI.png" alt="MSI Logo" class="msi-logo">
+    </div>
+    <div class="nav-menu" id="navMenu">
+        <a href="index.html" class="nav-link"><span class="nav-icon">🏠</span> Home</a>
+        <a href="registration.html" class="nav-link"><span class="nav-icon">📝</span> Registrieren</a>
+        <a href="my_tournaments.html" class="nav-link"><span class="nav-icon">🏆</span> Meine Turniere</a>
+        <a href="profile.html" class="nav-link"><span class="nav-icon">👤</span> Profil</a>
+        <a href="chat_test_page.html" class="nav-link"><span class="nav-icon">💬</span> Chat</a>
+    </div>
+</div>
+
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div id="authContainer">
+            <!-- Tabs -->
+            <div style="display:flex;gap:0;max-width:520px;margin:0 auto 0 auto;border-radius:16px 16px 0 0;overflow:hidden;border:1px solid #333;border-bottom:none;">
+                <button id="tabLogin" onclick="switchTab('login')" style="flex:1;padding:14px;background:linear-gradient(145deg,#2a2a3e,#1a1a2e);color:#00ff88;font-weight:bold;font-size:1rem;border:none;cursor:pointer;transition:all 0.3s ease;letter-spacing:0.5px;">🔑 Login</button>
+                <button id="tabRegister" onclick="switchTab('register')" style="flex:1;padding:14px;background:linear-gradient(145deg,#1a1a2e,#0f0f1a);color:#888;font-weight:bold;font-size:1rem;border:none;cursor:pointer;transition:all 0.3s ease;letter-spacing:0.5px;">🎮 Registrieren</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="formLogin" class="auth-form">
+                <div class="profile-avatar">🔑</div>
+                <h2>Willkommen zurück</h2>
+                <p class="description">Melde dich mit deiner Email und deinem Passwort an.</p>
+                <div class="form-section">
+                    <div class="form-group">
+                        <label>📧 Email-Adresse</label>
+                        <input type="email" id="loginEmail" placeholder="deine@email.com" autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label>🔒 Passwort</label>
+                        <input type="password" id="loginPassword" placeholder="Dein Passwort" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+                    </div>
+                    <div class="error-message" id="loginError"></div>
+                    <div class="success-message" id="loginSuccess"></div>
+                    <button class="save-button" onclick="doLogin()">🔑 Anmelden</button>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="formRegister" class="auth-form" style="display:none;">
+                <div class="profile-avatar">🎮</div>
+                <h2>Account erstellen</h2>
+                <p class="description">Erstelle deinen MSI Gaming Account.</p>
+                <div class="form-section">
+                    <div class="section-title"><span>🌟</span> Pflichtfelder</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>📧 Email-Adresse *</label>
+                            <input type="email" id="regEmail" placeholder="deine@email.com" autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label>👤 Username *</label>
+                            <input type="text" id="regUsername" placeholder="Dein Spielername" maxlength="50" oninput="document.getElementById('regUsernameCounter').textContent=this.value.length+'/50'">
+                            <div class="character-counter" id="regUsernameCounter">0/50</div>
+                        </div>
+                        <div class="form-group">
+                            <label>🔒 Passwort * (min. 6 Zeichen)</label>
+                            <input type="password" id="regPassword" placeholder="Sicheres Passwort" autocomplete="new-password">
+                        </div>
+                        <div class="form-group">
+                            <label>🔒 Passwort bestätigen *</label>
+                            <input type="password" id="regPasswordConfirm" placeholder="Passwort wiederholen" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()">
+                        </div>
+                    </div>
+                    <div class="section-title" style="margin-top:1.5rem;"><span>🎮</span> Gamertags (Optional)</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label><span class="platform-icon">🎮</span> PlayStation</label>
+                            <input type="text" id="regPS" placeholder="PSN Username" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label><span class="platform-icon">🎯</span> Xbox</label>
+                            <input type="text" id="regXbox" placeholder="Xbox Gamertag" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label><span class="platform-icon">💻</span> Steam</label>
+                            <input type="text" id="regSteam" placeholder="Steam Username" maxlength="50">
+                        </div>
+                    </div>
+                    <div class="error-message" id="regError"></div>
+                    <div class="success-message" id="regSuccess"></div>
+                    <button class="save-button" onclick="doRegister()">🚀 Account erstellen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Edit (shown when logged in) -->
+        <div id="profileContainer" style="display:none;">
+            <div class="registration-container">
+                <div class="profile-avatar" id="profileAvatar">👤</div>
+                <h2 id="profileTitle">Profil bearbeiten</h2>
+                <p class="description" id="profileEmail"></p>
+
+                <div class="form-section">
+                    <div class="section-title"><span>✏️</span> Profildaten</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>👤 Username *</label>
+                            <input type="text" id="editUsername" placeholder="Spielername" maxlength="50" oninput="document.getElementById('editUsernameCounter').textContent=this.value.length+'/50'">
+                            <div class="character-counter" id="editUsernameCounter">0/50</div>
+                        </div>
+                        <div class="form-group">
+                            <label><span class="platform-icon">🎮</span> PlayStation</label>
+                            <input type="text" id="editPS" placeholder="PSN Username" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label><span class="platform-icon">🎯</span> Xbox</label>
+                            <input type="text" id="editXbox" placeholder="Xbox Gamertag" maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label><span class="platform-icon">💻</span> Steam</label>
+                            <input type="text" id="editSteam" placeholder="Steam Username" maxlength="50">
+                        </div>
+                    </div>
+
+                    <div class="section-title" style="margin-top:1.5rem;"><span>🔒</span> Passwort ändern (optional)</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Aktuelles Passwort</label>
+                            <input type="password" id="editCurrentPw" placeholder="Aktuelles Passwort">
+                        </div>
+                        <div class="form-group">
+                            <label>Neues Passwort</label>
+                            <input type="password" id="editNewPw" placeholder="Neues Passwort (min. 6)">
+                        </div>
+                    </div>
+
+                    <div class="error-message" id="editError"></div>
+                    <div class="success-message" id="editSuccess"></div>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:1rem;">
+                        <button class="save-button" onclick="doUpdateProfile()" style="flex:1;">💾 Speichern</button>
+                        <button onclick="doLogout()" style="flex:1;padding:15px 30px;border-radius:25px;background:linear-gradient(45deg,#ff4757,#ff6b7a);color:#fff;border:none;font-weight:bold;cursor:pointer;font-size:1rem;transition:all 0.3s ease;">🚪 Abmelden</button>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="form-section" id="statsSection" style="margin-top:1.5rem;display:none;">
+                    <div class="section-title"><span>📊</span> Deine Stats</div>
+                    <div id="statsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;margin-top:1rem;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://msi-backend-test.onrender.com';
+
+        function getSession() { try { return JSON.parse(localStorage.getItem('msi_user')||'null'); } catch { return null; } }
+        function setSession(d) { localStorage.setItem('msi_user', JSON.stringify(d)); }
+        function clearSession() { localStorage.removeItem('msi_user'); }
+
+        function showMsg(id, msg, type='error') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = msg;
+            el.className = type === 'error' ? 'error-message visible' : 'success-message visible';
+            setTimeout(()=>{ el.className = type === 'error' ? 'error-message' : 'success-message'; }, 5000);
+        }
+
+        function switchTab(tab) {
+            const isLogin = tab === 'login';
+            document.getElementById('formLogin').style.display = isLogin ? '' : 'none';
+            document.getElementById('formRegister').style.display = isLogin ? 'none' : '';
+            document.getElementById('tabLogin').style.cssText = isLogin
+                ? 'flex:1;padding:14px;background:linear-gradient(145deg,#2a2a3e,#1a1a2e);color:#00ff88;font-weight:bold;font-size:1rem;border:none;cursor:pointer;transition:all 0.3s ease;letter-spacing:0.5px;'
+                : 'flex:1;padding:14px;background:linear-gradient(145deg,#1a1a2e,#0f0f1a);color:#888;font-weight:bold;font-size:1rem;border:none;cursor:pointer;transition:all 0.3s ease;letter-spacing:0.5px;';
+            document.getElementById('tabRegister').style.cssText = isLogin
+                ? 'flex:1;padding:14px;background:linear-gradient(145deg,#1a1a2e,#0f0f1a);color:#888;font-weight:bold;font-size:1rem;border:none;cursor:pointer;transition:all 0.3s ease;letter-spacing:0.5px;'
+                : 'flex:1;padding:14px;background:linear-gradient(145deg,#2a2a3e,#1a1a2e);color:#00ff88;font-weight:bold;font-size:1rem;border:none;cursor:pointer;transition:all 0.3s ease;letter-spacing:0.5px;';
+        }
+
+        async function doLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            if (!email || !password) return showMsg('loginError', 'Bitte alle Felder ausfüllen.');
+            try {
+                const res = await fetch(API + '/user/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password}) });
+                const data = await res.json();
+                if (!res.ok) return showMsg('loginError', data.error || 'Fehler beim Login.');
+                setSession({...data.user, token: data.token});
+                showMsg('loginSuccess', '✅ Login erfolgreich! Weiterleitung...', 'success');
+                const redirect = sessionStorage.getItem('msi_redirect');
+                sessionStorage.removeItem('msi_redirect');
+                setTimeout(()=>{ window.location.href = redirect || 'index.html'; }, 800);
+            } catch (e) { showMsg('loginError', 'Server nicht erreichbar.'); }
+        }
+
+        async function doRegister() {
+            const email = document.getElementById('regEmail').value.trim();
+            const platformUsername = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('regPasswordConfirm').value;
+            if (!email||!platformUsername||!password) return showMsg('regError','Bitte alle Pflichtfelder ausfüllen.');
+            if (password !== confirm) return showMsg('regError','Passwörter stimmen nicht überein.');
+            if (password.length < 6) return showMsg('regError','Passwort muss mindestens 6 Zeichen haben.');
+            const gamertags = {
+                playstation: document.getElementById('regPS').value.trim(),
+                xbox: document.getElementById('regXbox').value.trim(),
+                steam: document.getElementById('regSteam').value.trim()
+            };
+            try {
+                const res = await fetch(API + '/user/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,platformUsername,password,gamertags}) });
+                const data = await res.json();
+                if (!res.ok) return showMsg('regError', data.error || 'Registrierung fehlgeschlagen.');
+                showMsg('regSuccess', '🎉 Account erstellt! Du kannst dich jetzt einloggen.', 'success');
+                setTimeout(()=>switchTab('login'), 1500);
+            } catch (e) { showMsg('regError', 'Server nicht erreichbar.'); }
+        }
+
+        async function doUpdateProfile() {
+            const session = getSession();
+            if (!session) return;
+            const platformUsername = document.getElementById('editUsername').value.trim();
+            const gamertags = {
+                playstation: document.getElementById('editPS').value.trim(),
+                xbox: document.getElementById('editXbox').value.trim(),
+                steam: document.getElementById('editSteam').value.trim()
+            };
+            const currentPassword = document.getElementById('editCurrentPw').value;
+            const newPassword = document.getElementById('editNewPw').value;
+            const body = { email: session.email, platformUsername, gamertags };
+            if (newPassword) { body.currentPassword = currentPassword; body.newPassword = newPassword; }
+            try {
+                const res = await fetch(API + '/user/update', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+                const data = await res.json();
+                if (!res.ok) return showMsg('editError', data.error || 'Fehler beim Speichern.');
+                setSession({...session, ...data.user});
+                showMsg('editSuccess', '✅ Profil gespeichert!', 'success');
+                document.getElementById('editCurrentPw').value = '';
+                document.getElementById('editNewPw').value = '';
+            } catch (e) { showMsg('editError', 'Server nicht erreichbar.'); }
+        }
+
+        function doLogout() {
+            clearSession();
+            window.location.reload();
+        }
+
+        function renderStats(user) {
+            const section = document.getElementById('statsSection');
+            const grid = document.getElementById('statsGrid');
+            if (!user.stats) return;
+            section.style.display = '';
+            const items = [
+                { label:'Siege', val: user.stats.totalWins||0 },
+                { label:'Punkte', val: user.stats.totalPoints||0 },
+                { label:'Turniersiege', val: user.stats.winsTournaments||0 },
+            ];
+            if (user.stats.gameStats) {
+                for (const [gid,gs] of Object.entries(user.stats.gameStats)) {
+                    if ((gs.tournaments||0) > 0) items.push({ label: gid.toUpperCase(), val: `${gs.wins||0}W / ${gs.tournaments||0}T` });
+                }
+            }
+            grid.innerHTML = items.map(i=>`
+                <div style="background:linear-gradient(145deg,#1a1a2e,#0f0f1a);border:1px solid #333;border-radius:15px;padding:15px;text-align:center;">
+                    <div style="font-size:1.5rem;font-weight:bold;background:linear-gradient(45deg,#00ff88,#00ccff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${i.val}</div>
+                    <div style="font-size:0.8rem;color:#aaa;margin-top:4px;text-transform:uppercase;letter-spacing:1px;">${i.label}</div>
+                </div>`).join('');
+        }
+
+        // Init
+        (function init() {
+            const session = getSession();
+            if (session) {
+                // Show profile editor
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('profileContainer').style.display = '';
+                document.getElementById('profileAvatar').textContent = session.platformUsername.charAt(0).toUpperCase();
+                document.getElementById('profileTitle').textContent = `👋 Hallo, ${session.platformUsername}`;
+                document.getElementById('profileEmail').textContent = `📧 ${session.email}`;
+                document.getElementById('editUsername').value = session.platformUsername || '';
+                document.getElementById('editUsernameCounter').textContent = (session.platformUsername||'').length + '/50';
+                document.getElementById('editPS').value = session.gamertags?.playstation || '';
+                document.getElementById('editXbox').value = session.gamertags?.xbox || '';
+                document.getElementById('editSteam').value = session.gamertags?.steam || '';
+                renderStats(session);
+            } else {
+                // Show login/register
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('tab') === 'register') switchTab('register');
+            }
+        })();
+    </script>
+</body>
+</html>

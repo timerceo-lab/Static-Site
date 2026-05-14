@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat System Test - MSI Gaming Universe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            background: linear-gradient(45deg, #ffffff, #00ff88, #00ccff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .connect-button {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #0a0a0a;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .connect-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 255, 136, 0.5);
+        }
+
+        .user-info {
+            display: none;
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border-radius: 15px;
+        }
+
+        .user-info.visible {
+            display: block;
+        }
+
+        /* Chat Widget */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 380px;
+            max-height: 600px;
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            border: 2px solid #333;
+        }
+
+        .chat-widget.minimized {
+            max-height: 60px;
+        }
+
+        .chat-header {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            padding: 15px 20px;
+            border-radius: 18px 18px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-bottom: 2px solid #333;
+        }
+
+        .chat-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #00ff88;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .unread-badge {
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: none;
+        }
+
+        .unread-badge.visible {
+            display: flex;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .minimize-btn {
+            background: none;
+            border: none;
+            color: #00ccff;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .minimize-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .chat-content {
+            display: flex;
+            flex-direction: column;
+            height: 540px;
+        }
+
+        .chat-widget.minimized .chat-content {
+            display: none;
+        }
+
+        /* User Search */
+        .user-search {
+            padding: 15px;
+            border-bottom: 2px solid #333;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #333;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        /* User List */
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .user-item {
+            padding: 12px 15px;
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #333;
+        }
+
+        .user-item:hover {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 255, 0.05));
+            border-color: #00ff88;
+            transform: translateX(5px);
+        }
+
+        .user-item-info {
+            flex: 1;
+        }
+
+        .user-item-name {
+            font-weight: bold;
+            color: #00ccff;
+            margin-bottom: 2px;
+        }
+
+        .user-item-wallet {
+            font-size: 0.8rem;
+            color: #888;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Chat View */
+        .chat-view {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-view.active {
+            display: flex;
+        }
+
+        .chat-view-header {
+            padding: 15px;
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            border-bottom: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-view-user {
+            font-weight: bold;
+            color: #00ccff;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #00ff88;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-5px);
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.sent {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.2), rgba(0, 204, 255, 0.1));
+            align-self: flex-end;
+            border: 1px solid #00ff88;
+        }
+
+        .message.received {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            align-self: flex-start;
+            border: 1px solid #333;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Template Messages */
+        .template-messages {
+            padding: 10px 15px;
+            border-top: 2px solid #333;
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+        }
+
+        .template-label {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .template-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .template-btn {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            border: 1px solid #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .template-btn:hover {
+            background: linear-gradient(145deg, rgba(0, 255, 136, 0.1), rgba(0, 204, 255, 0.05));
+            border-color: #00ff88;
+            transform: translateX(3px);
+        }
+
+        /* Time Picker Modal */
+        .time-picker-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .time-picker-modal.active {
+            display: flex;
+        }
+
+        .time-picker-content {
+            background: linear-gradient(145deg, #1a1a2e, #0f0f1a);
+            padding: 2rem;
+            border-radius: 20px;
+            border: 2px solid #333;
+            text-align: center;
+        }
+
+        .time-picker-content h3 {
+            color: #00ff88;
+            margin-bottom: 1.5rem;
+        }
+
+        .time-input {
+            padding: 10px 15px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .time-picker-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(45deg, #00ff88, #00ccff);
+            color: #0a0a0a;
+        }
+
+        .modal-btn.cancel {
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            color: white;
+            border: 1px solid #333;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .no-users {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a2e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff88;
+        }
+
+        @media (max-width: 480px) {
+            .chat-widget {
+                width: calc(100vw - 40px);
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 Chat System Test</h1>
+
+            <div class="language-switcher" style="margin-top: 1rem;">
+                    <button onclick="setLanguage('de')">🇩🇪 Deutsch</button>
+                    <button onclick="setLanguage('en')">🇬🇧 English</button>
+                </div>
+
+            <button class="connect-button" id="connectButton" onclick="connectWallet()">
+                🦊 Mit MetaMask verbinden
+            </button>
+            
+            <div class="user-info" id="userInfo">
+                <div style="font-weight: bold; margin-bottom: 0.5rem;">Verbunden als:</div>
+                <div id="userDisplay"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <div class="chat-header" onclick="toggleChat()">
+            <div class="chat-title">
+                💬 Chat
+                <span class="unread-badge" id="unreadBadge">0</span>
+            </div>
+            <button class="minimize-btn" id="minimizeBtn">▼</button>
+        </div>
+
+        <div class="chat-content">
+            <!-- User List View -->
+            <div class="user-list-view" id="userListView">
+                <div class="user-search">
+                    <input type="text" class="search-input" id="searchInput" placeholder="🔍 Benutzer suchen..." oninput="filterUsers()">
+                </div>
+                <div class="user-list" id="userList">
+                    <div class="no-users">Verbinde deine Wallet um Benutzer zu sehen</div>
+                </div>
+            </div>
+
+            <!-- Chat View -->
+            <div class="chat-view" id="chatView">
+                <div class="chat-view-header">
+                    <button class="back-btn" onclick="backToUserList()">← Zurück</button>
+                    <div class="chat-view-user" id="chatViewUser"></div>
+                </div>
+                <div class="messages-container" id="messagesContainer"></div>
+                <div class="template-messages">
+                    <div class="template-label">Schnellnachrichten:</div>
+                    <div class="template-buttons">
+                        <button class="template-btn" onclick="sendTemplate('hello')">👋 Hallo</button>
+                        <button class="template-btn" onclick="sendTemplate('time')">⏰ Lass uns spielen um...</button>
+                        <button class="template-btn" onclick="sendTemplate('name')">📝 Ich heiße...auf...</button>
+                        <button class="template-btn" onclick="sendTemplate('gg')">🎮 GG</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Picker Modal -->
+    <div class="time-picker-modal" id="timePickerModal">
+        <div class="time-picker-content">
+            <h3>⏰ Wähle eine Uhrzeit</h3>
+            <input type="time" class="time-input" id="timeInput" value="18:00">
+            <div class="time-picker-buttons">
+                <button class="modal-btn confirm" onclick="confirmTime()">✓ Bestätigen</button>
+                <button class="modal-btn cancel" onclick="closeTimePicker()">✕ Abbrechen</button>
+            </div>
+        </div>
+    </div>
+    <div class="time-picker-modal" id="nameInputModal">
+    <div class="time-picker-content">
+        <h3>🔹 Vorstellung</h3>
+        <input type="text" class="time-input" id="nameInput" placeholder="Dein Name" style="margin-bottom: 10px;">
+        <input type="text" class="time-input" id="consoleInput" placeholder="Deine Konsole (z.B. PS5, Xbox, PC)">
+        <div class="time-picker-buttons">
+            <button class="modal-btn confirm" onclick="confirmNameInput()">✓ Bestätigen</button>
+            <button class="modal-btn cancel" onclick="closeNameInput()">✕ Abbrechen</button>
+        </div>
+    </div>
+</div>
+
+    <script>
+        const CHAT_API = 'https://msi-tournament-backend.onrender.com';
+        const MAIN_API = 'https://msi-tournament-backend.onrender.com';
+        
+        let currentUser = null;
+        let availableUsers = [];
+        let currentChatUser = null;
+        let refreshInterval = null;
+        let unreadInterval = null;
+
+        // Check MetaMask
+        function isMetaMaskInstalled() {
+            return typeof window.ethereum !== 'undefined' && window.ethereum.isMetaMask;
+        }
+
+        // Connect Wallet
+       async function connectWallet() {
+    if (!isMetaMaskInstalled()) {
+        alert('MetaMask ist nicht installiert!');
+        return;
+    }
+
+    try {
+        const accounts = await window.ethereum.request({
+            method: 'eth_requestAccounts'
+        });
+
+        if (accounts.length > 0) {
+            const walletAddress = accounts[0];
+            const response = await fetch(`${MAIN_API}/user/${walletAddress}`);
+            
+            if (response.ok) {
+                currentUser = await response.json();
+                updateUI();
+                await loadAvailableUsers();
+                startAutoRefresh();
+                startUnreadCheck();
+            } else {
+                alert('Diese Wallet ist nicht registriert!');
+            }
+        }
+    } catch (error) {
+        console.error('Connection error:', error);
+        alert('Fehler beim Verbinden mit MetaMask');
+    }
+}
+
+        // Display Messages
+        function displayMessages(messages) {
+            const container = document.getElementById('messagesContainer');
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="no-users">Noch keine Nachrichten</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => {
+                const isSent = msg.from.toLowerCase() === currentUser.walletAddress.toLowerCase();
+                const time = new Date(msg.timestamp).toLocaleTimeString('de-DE', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                return `
+                    <div class="message ${isSent ? 'sent' : 'received'}">
+                        <div>${msg.message}</div>
+                        <div class="message-time">${time}</div>
+                    </div>
+                `;
+            }).join('');
+
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Send Template
+        function sendTemplate(type) {
+    switch(type) {
+        case 'hello':
+            sendMessage(translations[currentLang].helloMsg, 'template');
+            break;
+        case 'time':
+            openTimePicker();
+            break;
+        case 'name':
+            openNameInput();
+            break;
+        case 'gg':
+            sendMessage(translations[currentLang].ggMsg, 'template');
+            break;
+    }
+}
+
+        // Send Message
+        async function sendMessage(message, messageType = 'text') {
+            if (!currentChatUser || !message.trim()) return;
+
+            try {
+                const response = await fetch(`${CHAT_API}/chat/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from: currentUser.walletAddress,
+                        to: currentChatUser.walletAddress,
+                        message: message.trim(),
+                        messageType: messageType
+                    })
+                });
+
+                if (response.ok) {
+                    await loadConversation();
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+
+        // Time Picker
+        function openTimePicker() {
+            document.getElementById('timePickerModal').classList.add('active');
+        }
+
+        function closeTimePicker() {
+            document.getElementById('timePickerModal').classList.remove('active');
+        }
+
+       function confirmTime() {
+    const time = document.getElementById('timeInput').value;
+    if (time) {
+        sendMessage(`${translations[currentLang].timeMsg}${time}`, 'template');
+    }
+    closeTimePicker();
+}
+
+        function openNameInput() {
+    document.getElementById('nameInput').value = '';
+    document.getElementById('consoleInput').value = '';
+    document.getElementById('nameInputModal').classList.add('active');
+}
+
+function closeNameInput() {
+    document.getElementById('nameInputModal').classList.remove('active');
+}
+
+function confirmNameInput() {
+    const name = document.getElementById('nameInput').value.trim();
+    const console = document.getElementById('consoleInput').value.trim();
+    
+    if (name && console) {
+        sendMessage(`${translations[currentLang].nameMsg}${name}${translations[currentLang].nameMsgOn}${console}`, 'template');
+    } else {
+        alert(currentLang === 'de' ? 'Bitte fülle beide Felder aus!' : 'Please fill in both fields!');
+        return;
+    }
+    closeNameInput();
+}
+
+        // Toggle Chat
+        function toggleChat() {
+            const widget = document.getElementById('chatWidget');
+            const btn = document.getElementById('minimizeBtn');
+            
+            widget.classList.toggle('minimized');
+            btn.textContent = widget.classList.contains('minimized') ? '▲' : '▼';
+        }
+
+        // Update Unread Badge
+        function updateUnreadBadge() {
+            const totalUnread = availableUsers.reduce((sum, user) => sum + (user.unreadCount || 0), 0);
+            const badge = document.getElementById('unreadBadge');
+            
+            if (totalUnread > 0) {
+                badge.textContent = totalUnread;
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
+        }
+
+        // Auto Refresh
+        function startAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
+                if (currentUser && !currentChatUser) {
+                    loadAvailableUsers();
+                }
+            }, 5000);
+        }
+
+        function startConversationRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
+                if (currentChatUser) {
+                    loadConversation();
+                }
+            }, 3000);
+        }
+
+        function stopConversationRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            startAutoRefresh();
+        }
+
+        // Unread Check
+        function startUnreadCheck() {
+            if (unreadInterval) clearInterval(unreadInterval);
+            unreadInterval = setInterval(() => {
+                if (currentUser && !currentChatUser) {
+                    loadAvailableUsers();
+                }
+            }, 5000);
+        }
+
+const translations = {
+    de: {
+        connect: "🦊 Mit MetaMask verbinden",
+        connectedAs: "Verbunden als:",
+        searchPlaceholder: "🔍 Benutzer suchen...",
+        noUsers: "Verbinde deine Wallet um Benutzer zu sehen",
+        noUsersFound: "Keine Benutzer gefunden",
+        noMessages: "Noch keine Nachrichten",
+        back: "← Zurück",
+        quickMsgs: "Schnellnachrichten:",
+        hello: "👋 Hallo",
+        time: "⏰ Lass uns spielen um...",
+        name: "📝 Ich heiße...auf...",
+        gg: "🎮 GG",
+        timePickerTitle: "⏰ Wähle eine Uhrzeit",
+        confirm: "✓ Bestätigen",
+        cancel: "✕ Abbrechen",
+        intro: "🔹 Vorstellung",
+        namePlaceholder: "Dein Name",
+        consolePlaceholder: "Deine Konsole (z.B. PS5, Xbox, PC)",
+        helloMsg: "👋 Hallo",
+        timeMsg: "⏰ Lass uns spielen um ",
+        nameMsg: "📝 Ich heiße ",
+        nameMsgOn: " auf ",
+        ggMsg: "🎮 GG",
+        noUsersFound: "Keine registrierten Benutzer gefunden"
+    },
+    en: {
+        connect: "🦊 Connect with MetaMask",
+        connectedAs: "Connected as:",
+        searchPlaceholder: "🔍 Search user...",
+        noUsers: "Connect your wallet to see users",
+        noUsersFound: "No users found",
+        noMessages: "No messages yet",
+        back: "← Back",
+        quickMsgs: "Quick Messages:",
+        hello: "👋 Hello",
+        time: "⏰ Let's play at...",
+        name: "📝 My name is...on...",
+        gg: "🎮 GG",
+        timePickerTitle: "⏰ Choose a time",
+        confirm: "✓ Confirm",
+        cancel: "✕ Cancel",
+        intro: "🔹 Introduction",
+        namePlaceholder: "Your name",
+        consolePlaceholder: "Your console (e.g. PS5, Xbox, PC)",
+        helloMsg: "👋 Hello",
+        timeMsg: "⏰ Let's play at ",
+        nameMsg: "📝 My name is ",
+        nameMsgOn: " on ",
+        ggMsg: "🎮 GG",
+        noUsersFound: "No registered users found"
+    }
+};
+
+let currentLang = 'de';
+
+function setLanguage(lang) {
+    currentLang = lang;
+
+    document.getElementById("connectButton").innerText = translations[lang].connect;
+    
+    const userInfoDiv = document.querySelector("#userInfo > div:first-child");
+    if (userInfoDiv) {
+        userInfoDiv.innerText = translations[lang].connectedAs;
+    }
+    
+    document.getElementById("searchInput").placeholder = translations[lang].searchPlaceholder;
+
+    // Update template label
+    const templateLabel = document.querySelector(".template-label");
+    if (templateLabel) {
+        templateLabel.innerText = translations[lang].quickMsgs;
+    }
+
+    // Update back button
+    const backBtn = document.querySelector(".back-btn");
+    if (backBtn) {
+        backBtn.innerText = translations[lang].back;
+    }
+
+    // Update template buttons
+    const btns = document.querySelectorAll(".template-btn");
+    if (btns.length >= 4) {
+        btns[0].innerText = translations[lang].hello;
+        btns[1].innerText = translations[lang].time;
+        btns[2].innerText = translations[lang].name;
+        btns[3].innerText = translations[lang].gg;
+    }
+
+    // Update time picker modal
+    const timePickerTitle = document.querySelector("#timePickerModal h3");
+    if (timePickerTitle) {
+        timePickerTitle.innerText = translations[lang].timePickerTitle;
+    }
+    
+    const timePickerConfirm = document.querySelector("#timePickerModal .confirm");
+    if (timePickerConfirm) {
+        timePickerConfirm.innerText = translations[lang].confirm;
+    }
+    
+    const timePickerCancel = document.querySelector("#timePickerModal .cancel");
+    if (timePickerCancel) {
+        timePickerCancel.innerText = translations[lang].cancel;
+    }
+
+    // Update name input modal
+    const nameInputTitle = document.querySelector("#nameInputModal h3");
+    if (nameInputTitle) {
+        nameInputTitle.innerText = translations[lang].intro;
+    }
+    
+    const nameInputConfirm = document.querySelector("#nameInputModal .confirm");
+    if (nameInputConfirm) {
+        nameInputConfirm.innerText = translations[lang].confirm;
+    }
+    
+    const nameInputCancel = document.querySelector("#nameInputModal .cancel");
+    if (nameInputCancel) {
+        nameInputCancel.innerText = translations[lang].cancel;
+    }
+    
+    document.getElementById("nameInput").placeholder = translations[lang].namePlaceholder;
+    document.getElementById("consoleInput").placeholder = translations[lang].consolePlaceholder;
+
+    // Update user list if available
+    if (currentUser) {
+        displayUsers();
+    }
+}
+
+        // Check Connection on Load
+        async function checkConnection() {
+            if (isMetaMaskInstalled()) {
+                try {
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_accounts'
+                    });
+                    
+                    if (accounts.length > 0) {
+                        const walletAddress = accounts[0];
+                        const response = await fetch(`${MAIN_API}/user/${walletAddress}`);
+                        
+                        if (response.ok) {
+                            currentUser = await response.json();
+                            updateUI();
+                            await loadAvailableUsers();
+                            startAutoRefresh();
+                            startUnreadCheck();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking connection:', error);
+                }
+            }
+        }
+// Update UI
+        function updateUI() {
+            document.getElementById('connectButton').style.display = 'none';
+            document.getElementById('userInfo').classList.add('visible');
+            document.getElementById('userDisplay').textContent = 
+                `${currentUser.platformUsername} (${formatAddress(currentUser.walletAddress)})`;
+        }
+
+        // Format Address
+        function formatAddress(address) {
+            return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+        }
+
+        // Load Available Users
+          async function loadAvailableUsers() {
+    if (!currentUser) {
+        displayUsers(); // Zeige "Verbinde Wallet" Nachricht
+        return;
+    }
+
+    try {
+        console.log('Loading users for:', currentUser.walletAddress);
+        const response = await fetch(`${CHAT_API}/chat/available-users/${currentUser.walletAddress}`);
+        
+        console.log('Response status:', response.status);
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Loaded users:', data);
+            availableUsers = data.users || [];
+            displayUsers(); // Aktualisiere die Anzeige
+            updateUnreadBadge();
+        } else {
+            console.error('Response not ok:', await response.text());
+            availableUsers = [];
+            displayUsers();
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        availableUsers = [];
+        displayUsers(); // Zeige Fehlerzustand
+    }
+}
+
+        // Display Users
+         function displayUsers() {
+    const userList = document.getElementById('userList');
+    
+    // Check if user is connected
+if (!currentUser) {
+    userList.innerHTML = `<div class="no-users">${translations[currentLang].noUsers}</div>`;
+    return;
+}
+
+if (availableUsers.length === 0) {
+    userList.innerHTML = `<div class="no-users">${translations[currentLang].noUsersFound}</div>`;
+    return;
+}
+
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const filteredUsers = availableUsers.filter(user => 
+        user.platformUsername.toLowerCase().includes(searchTerm)
+    );
+
+    if (filteredUsers.length === 0) {
+    userList.innerHTML = `<div class="no-users">${translations[currentLang].noUsersFound}</div>`;
+    return;
+    }
+
+    userList.innerHTML = filteredUsers.map(user => `
+        <div class="user-item" onclick="openChat('${user.walletAddress}')">
+            <div class="user-item-info">
+                <div class="user-item-name">${user.platformUsername}</div>
+                <div class="user-item-wallet">${formatAddress(user.walletAddress)}</div>
+            </div>
+            ${user.unreadCount > 0 ? `<span class="unread-badge visible">${user.unreadCount}</span>` : ''}
+        </div>
+    `).join('');
+}
+
+        // Filter Users
+        function filterUsers() {
+            displayUsers();
+        }
+
+        // Open Chat
+        async function openChat(walletAddress) {
+            const user = availableUsers.find(u => u.walletAddress.toLowerCase() === walletAddress.toLowerCase());
+            if (!user) return;
+
+            currentChatUser = user;
+            document.getElementById('chatViewUser').textContent = user.platformUsername;
+            document.getElementById('userListView').style.display = 'none';
+            document.getElementById('chatView').classList.add('active');
+
+            await loadConversation();
+            startConversationRefresh();
+        }
+
+        // Back to User List
+        function backToUserList() {
+            currentChatUser = null;
+            document.getElementById('chatView').classList.remove('active');
+            document.getElementById('userListView').style.display = 'block';
+            stopConversationRefresh();
+            loadAvailableUsers();
+        }
+
+        // Load Conversation
+        async function loadConversation() {
+            if (!currentChatUser) return;
+
+            try {
+                const response = await fetch(
+                    `${CHAT_API}/chat/conversation/${currentUser.walletAddress}/${currentChatUser.walletAddress}`
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayMessages(data.messages);
+                }
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+            }
+        }
+
+        // Initialize
+                window.addEventListener('load', () => {
+            checkConnection();
+            setLanguage(currentLang);
+        });
+
+        // MetaMask Account Change
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length === 0) {
+                    location.reload();
+                } else {
+                    location.reload();
+                }
+            });
+        }
+
+        // Close time picker on outside click
+        document.getElementById('timePickerModal').addEventListener('click', (e) => {
+            if (e.target.id === 'timePickerModal') {
+                closeTimePicker();
+            }
+        });
+
+        document.getElementById('nameInputModal').addEventListener('click', (e) => {
+    if (e.target.id === 'nameInputModal') {
+        closeNameInput();
+            }
+        });
+    </script>
+</body>
+</html>                  

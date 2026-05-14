@@ -1,0 +1,4 @@
+# Netlify Headers
+
+/*
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; connect-src 'self' https://msi-backend-test.onrender.com https://chat-71oo.onrender.com; img-src 'self' data: https: blob:; font-src 'self' data: https:;
