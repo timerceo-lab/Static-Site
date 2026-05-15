@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://msi-backend-test.onrender.com https://msi-backend-test.onrender.com https://metamask.io; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https:; script-src 'self' 'unsafe-inline' https:; font-src 'self' data: https:;">
-<title>Profil bearbeiten - MSI Tournament</title>
+<title>Profil bearbeiten - Zyphor</title>
     <style>
         * {
             margin: 0;
@@ -696,7 +696,7 @@
     <!-- Header -->
     <div class="msi-navigation">
     <div class="msi-logo-container">
-        <img src="MSI.png" alt="MSI Logo" class="msi-logo">
+        <img src="Zyphor.png" alt="Zyphor Logo" class="msi-logo">
     </div>
     <div class="nav-menu" id="navMenu">
         <a href="index.html" class="nav-link"><span class="nav-icon">🏠</span> Home</a>
@@ -741,7 +741,7 @@
             <div id="formRegister" class="auth-form" style="display:none;">
                 <div class="profile-avatar">🎮</div>
                 <h2>Account erstellen</h2>
-                <p class="description">Erstelle deinen MSI Gaming Account.</p>
+                <p class="description">Erstelle deinen Zyphor Account.</p>
                 <div class="form-section">
                     <div class="section-title"><span>🌟</span> Pflichtfelder</div>
                     <div class="form-grid">
@@ -877,31 +877,12 @@
             try {
                 const res = await fetch(API + '/user/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password}) });
                 const data = await res.json();
-                if (res.status === 403 && data.emailNotVerified) {
-                    // Show resend button instead of generic error
-                    document.getElementById('loginError').innerHTML = `
-                        ⚠️ ${data.error}<br>
-                        <button onclick="resendVerification('${data.email}')" style="margin-top:10px;background:linear-gradient(45deg,#00ff88,#00ccff);color:#000;border:none;padding:8px 20px;border-radius:15px;font-weight:bold;cursor:pointer;font-size:0.85rem;">
-                            📧 Bestätigungs-Email erneut senden
-                        </button>`;
-                    document.getElementById('loginError').className = 'error-message visible';
-                    return;
-                }
                 if (!res.ok) return showMsg('loginError', data.error || 'Fehler beim Login.');
                 setSession({...data.user, token: data.token});
                 showMsg('loginSuccess', '✅ Login erfolgreich! Weiterleitung...', 'success');
                 const redirect = sessionStorage.getItem('msi_redirect');
                 sessionStorage.removeItem('msi_redirect');
                 setTimeout(()=>{ window.location.href = redirect || 'index.html'; }, 800);
-            } catch (e) { showMsg('loginError', 'Server nicht erreichbar.'); }
-        }
-
-        async function resendVerification(email) {
-            try {
-                const res = await fetch(API + '/user/resend-verification', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email}) });
-                const data = await res.json();
-                if (!res.ok) return showMsg('loginError', data.error || 'Fehler.');
-                showMsg('loginSuccess', '📧 Bestätigungs-Email gesendet! Bitte prüfe dein Postfach.', 'success');
             } catch (e) { showMsg('loginError', 'Server nicht erreichbar.'); }
         }
 
@@ -922,8 +903,8 @@
                 const res = await fetch(API + '/user/register', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,platformUsername,password,gamertags}) });
                 const data = await res.json();
                 if (!res.ok) return showMsg('regError', data.error || 'Registrierung fehlgeschlagen.');
-                showMsg('regSuccess', '🎉 Account erstellt! Wir haben dir eine Bestätigungs-Email geschickt. Bitte prüfe dein Postfach.', 'success');
-                setTimeout(()=>switchTab('login'), 3000);
+                showMsg('regSuccess', '🎉 Account erstellt! Du kannst dich jetzt einloggen.', 'success');
+                setTimeout(()=>switchTab('login'), 1500);
             } catch (e) { showMsg('regError', 'Server nicht erreichbar.'); }
         }
 
@@ -979,38 +960,10 @@
         }
 
         // Init
-        (async function init() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const verifyToken = urlParams.get('verify');
-            const verifyEmail = urlParams.get('email');
-
-            // Handle email verification link click
-            if (verifyToken && verifyEmail) {
-                document.getElementById('authContainer').style.display = '';
-                document.getElementById('profileContainer').style.display = 'none';
-                showMsg('loginSuccess', '⏳ Email wird bestätigt...', 'success');
-                try {
-                    const res = await fetch(`${API}/user/verify-email?token=${encodeURIComponent(verifyToken)}&email=${encodeURIComponent(verifyEmail)}`);
-                    const data = await res.json();
-                    if (res.ok) {
-                        showMsg('loginSuccess', '🎉 Email erfolgreich bestätigt! Du kannst dich jetzt einloggen.', 'success');
-                        // Clean URL
-                        window.history.replaceState({}, '', 'profile.html');
-                    } else {
-                        showMsg('loginError', data.error || 'Bestätigung fehlgeschlagen.');
-                        if (data.expired) {
-                            document.getElementById('loginError').innerHTML += `<br>
-                                <button onclick="resendVerification('${verifyEmail}')" style="margin-top:10px;background:linear-gradient(45deg,#00ff88,#00ccff);color:#000;border:none;padding:8px 20px;border-radius:15px;font-weight:bold;cursor:pointer;font-size:0.85rem;">
-                                    📧 Neuen Link anfordern
-                                </button>`;
-                        }
-                    }
-                } catch (e) { showMsg('loginError', 'Server nicht erreichbar.'); }
-                return;
-            }
-
+        (function init() {
             const session = getSession();
             if (session) {
+                // Show profile editor
                 document.getElementById('authContainer').style.display = 'none';
                 document.getElementById('profileContainer').style.display = '';
                 document.getElementById('profileAvatar').textContent = session.platformUsername.charAt(0).toUpperCase();
@@ -1023,6 +976,8 @@
                 document.getElementById('editSteam').value = session.gamertags?.steam || '';
                 renderStats(session);
             } else {
+                // Show login/register
+                const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('tab') === 'register') switchTab('register');
             }
         })();
